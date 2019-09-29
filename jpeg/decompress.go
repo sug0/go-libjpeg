@@ -444,11 +444,13 @@ func DecodeIntoRGBBuf(dest *rgb.Image, r io.Reader, options *DecoderOptions) (ds
 	setupDecoderOptions(dinfo, options)
 
 	C.jpeg_calc_output_dimensions(dinfo)
+    w := int(dinfo.output_width)
+    h := int(dinfo.output_height)
 
-    if dest != nil && dest.Rect.Dx() == dinfo.output_width && dest.Rect.Dy() == dinfo.output_height {
+    if dest != nil && dest.Rect.Dx() == w && dest.Rect.Dy() == h {
         dst = dest
     } else {
-        dst = image.NewRGBA(image.Rect(0, 0, int(dinfo.output_width), int(dinfo.output_height)))
+        dst = image.NewRGBA(image.Rect(0, 0, w, h))
     }
 
 	dinfo.out_color_space = C.JCS_RGB
@@ -519,11 +521,13 @@ func DecodeIntoRGBABuf(dest *image.RGBA, r io.Reader, options *DecoderOptions) (
 	setupDecoderOptions(dinfo, options)
 
 	C.jpeg_calc_output_dimensions(dinfo)
+    w := int(dinfo.output_width)
+    h := int(dinfo.output_height)
 
-    if dest != nil && dest.Rect.Dx() == dinfo.output_width && dest.Rect.Dy() == dinfo.output_height {
+    if dest != nil && dest.Rect.Dx() == w && dest.Rect.Dy() == h {
         dst = dest
     } else {
-        dst = image.NewRGBA(image.Rect(0, 0, int(dinfo.output_width), int(dinfo.output_height)))
+        dst = image.NewRGBA(image.Rect(0, 0, w, h))
     }
 
 	colorSpace := getJCS_EXT_RGBA()
