@@ -466,6 +466,48 @@ func DecodeIntoRGBA(r io.Reader, options *DecoderOptions) (dest *image.RGBA, err
 	return
 }
 
+// Much like DecodeIntoRGBA, but decodes into a predefined buffer.
+func DecodeIntoRGBABuf(dest *image.RGBA, r io.Reader, options *DecoderOptions) (dst *image.RGBA, err error) {
+	dinfo := newDecompress(r)
+	if dinfo == nil {
+		return nil, errors.New("allocation failed")
+	}
+	defer destroyDecompress(dinfo)
+
+	// Recover panic
+	defer func() {
+		if r := recover(); r != nil {
+			if _, ok := r.(error); !ok {
+				err = fmt.Errorf("JPEG error: %v", r)
+			}
+		}
+	}()
+
+	err = readHeader(dinfo)
+	if err != nil {
+		return nil, err
+	}
+
+	setupDecoderOptions(dinfo, options)
+
+	C.jpeg_calc_output_dimensions(dinfo)
+
+    if dest != nil && dest.Rect.Dx() == dinfo.output_width && dest.Rect.Dy() == dinfo.output_height {
+        dst = dest
+    } else {
+        dst = image.NewRGBA(image.Rect(0, 0, int(dinfo.output_width), int(dinfo.output_height)))
+    }
+
+	colorSpace := getJCS_EXT_RGBA()
+	if colorSpace == C.JCS_UNKNOWN {
+		return nil, errors.New("JCS_EXT_RGBA is not supported (probably built without libjpeg-turbo)")
+	}
+	dinfo.out_color_space = colorSpace
+	err = readRGBScanlines(dinfo, dst.Pix, dst.Stride)
+
+	return
+}
+
 // DecodeConfig returns the color model and dimensions of a JPEG image without decoding the entire image.
 func DecodeConfig(r io.Reader) (config image.Config, err error) {
 	dinfo := newDecompress(r)
