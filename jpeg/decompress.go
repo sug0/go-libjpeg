@@ -450,7 +450,7 @@ func DecodeIntoRGBBuf(dest *rgb.Image, r io.Reader, options *DecoderOptions) (ds
     if dest != nil && dest.Rect.Dx() == w && dest.Rect.Dy() == h {
         dst = dest
     } else {
-        dst = image.NewRGBA(image.Rect(0, 0, w, h))
+        dst = rgb.NewImage(image.Rect(0, 0, w, h))
     }
 
 	dinfo.out_color_space = C.JCS_RGB
