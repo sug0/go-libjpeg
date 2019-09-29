@@ -428,6 +428,34 @@ func DecodeIntoRGB(r io.Reader, options *DecoderOptions) (dest *rgb.Image, err e
 	return decodeRGB(dinfo)
 }
 
+// Much like DecodeIntoRGB, but decodes into a predefined buffer.
+func DecodeIntoRGBBuf(dest *rgb.Image, r io.Reader, options *DecoderOptions) (dst *rgb.Image, err error) {
+	dinfo := newDecompress(r)
+	if dinfo == nil {
+		return nil, errors.New("allocation failed")
+	}
+	defer destroyDecompress(dinfo)
+
+	err = readHeader(dinfo)
+	if err != nil {
+		return nil, err
+	}
+
+	setupDecoderOptions(dinfo, options)
+
+	C.jpeg_calc_output_dimensions(dinfo)
+
+    if dest != nil && dest.Rect.Dx() == dinfo.output_width && dest.Rect.Dy() == dinfo.output_height {
+        dst = dest
+    } else {
+        dst = image.NewRGBA(image.Rect(0, 0, int(dinfo.output_width), int(dinfo.output_height)))
+    }
+
+	dinfo.out_color_space = C.JCS_RGB
+	err = readRGBScanlines(dinfo, dst.Pix, dst.Stride)
+	return
+}
+
 // DecodeIntoRGBA reads a JPEG data stream from r and returns decoded image as an image.RGBA with RGBA colors.
 // This function only works with libjpeg-turbo, not libjpeg.
 func DecodeIntoRGBA(r io.Reader, options *DecoderOptions) (dest *image.RGBA, err error) {
