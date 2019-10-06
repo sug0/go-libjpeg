@@ -8,3 +8,7 @@ void error_longjmp(j_common_ptr cinfo) {
 	struct my_error_mgr *err = (struct my_error_mgr *)cinfo->err;
 	longjmp(err->jmpbuf, err->pub.msg_code);
 }
+
+void error_noprint(j_common_ptr cinfo) {
+    /* does nothing */
+}

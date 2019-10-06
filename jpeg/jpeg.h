@@ -25,3 +25,4 @@ struct my_error_mgr {
 #endif
 
 void error_longjmp(j_common_ptr cinfo);
+void error_noprint(j_common_ptr cinfo);

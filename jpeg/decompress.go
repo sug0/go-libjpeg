@@ -23,6 +23,7 @@ static struct jpeg_decompress_struct *new_decompress(void) {
 
 	dinfo->err = jpeg_std_error(&jerr->pub);
 	jerr->pub.error_exit = (void *)error_longjmp;
+	jerr->pub.output_message = (void *)error_noprint;
 	if (setjmp(jerr->jmpbuf) != 0) {
 		free(jerr);
 		free(dinfo);
